@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#07131f">
-  <meta name="description" content="Conheça o projeto Estatísticas Bitcoin, suas ferramentas e o conteúdo educativo disponível no site.">
+  <meta name="description" content="Conheça como o site Estatísticas Bitcoin reúne dados, conteúdo educativo e ferramentas de consulta sobre o Bitcoin.">
   <title>Sobre | Estatísticas Bitcoin</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -25,37 +26,55 @@
   </header>
 
   <main class="container container-narrow" id="conteudo">
-    <section class="page-intro">
+    <section class="page-intro about-intro">
       <span class="eyebrow">Sobre o projeto</span>
-      <h1>Informação clara sobre o Bitcoin</h1>
-      <p>Estatísticas Bitcoin reúne conteúdo educativo e ferramentas simples para acompanhar dados do Bitcoin e entender conceitos importantes da rede.</p>
+      <h1>Sobre o projeto Estatísticas Bitcoin</h1>
+      <p>O Estatísticas Bitcoin é um site informativo que reúne recursos para acompanhar dados do Bitcoin e aprender sobre aspectos importantes da rede. O projeto oferece um painel com indicadores e histórico de preços, conteúdo explicativo sobre o halving e calculadoras para explorar datas desse ciclo. Seu objetivo é facilitar a consulta e o aprendizado; os dados podem ter atraso, e as ferramentas não fazem previsões nem oferecem recomendações financeiras.</p>
     </section>
 
-    <section class="info-grid" aria-label="Informações sobre o projeto">
+    <section class="info-grid about-articles" aria-label="Detalhes das páginas do projeto">
       <article class="card info-card">
-        <span class="feature-icon" aria-hidden="true">₿</span>
-        <h2>Conteúdo educativo</h2>
-        <p>O site apresenta informações gerais sobre o Bitcoin e uma página dedicada ao halving, evento programado que reduz periodicamente a emissão de novas moedas.</p>
+        <div class="about-article-content">
+          <span class="feature-icon" aria-hidden="true">$</span>
+          <div>
+            <h2>Dados Bitcoin</h2>
+            <p>A página reúne a cotação do Bitcoin em dólares, uma conversão aproximada para reais e a variação das últimas 24 horas. Também apresenta o índice de medo e ganância, o Mayer Multiple e o MVRV, com suas referências e datas de atualização.</p>
+            <p>O gráfico permite consultar o histórico das últimas 24 horas, dos últimos 7 dias ou dos últimos 30 dias. Ao passar o cursor pela linha, é possível ver o preço e a data do ponto selecionado. Os dados podem ter atraso e não são uma recomendação de investimento.</p>
+            <div class="about-article-actions">
+              <a class="btn btn-primary" href="dados-bitcoin.html">Ver Dados Bitcoin</a>
+            </div>
+          </div>
+        </div>
       </article>
       <article class="card info-card">
-        <span class="feature-icon" aria-hidden="true">±</span>
-        <h2>Como funciona a calculadora?</h2>
-        <p>As ferramentas calculam datas a partir de uma referência: uma mostra os marcos de 500 dias e a outra permite escolher quantos dias antes e depois. As estimativas não preveem preço nem comportamento do mercado.</p>
+        <div class="about-article-content">
+          <span class="feature-icon" aria-hidden="true">210k</span>
+          <div>
+            <h2>Halving Bitcoin</h2>
+            <p>Esta página explica o halving: a redução pela metade da recompensa em novos bitcoins por bloco, programada para ocorrer a cada 210 mil blocos. Isso acontece aproximadamente a cada quatro anos, mas a data do calendário é uma estimativa, pois depende do ritmo de criação dos blocos.</p>
+            <p>O artigo aborda a emissão de bitcoins, o papel da mineração e o limite previsto de 21 milhões de moedas. O halving altera a emissão, mas não determina o preço futuro do Bitcoin.</p>
+            <div class="about-article-actions">
+              <a class="btn btn-primary" href="halving-bitcoin.html">Ver Halving Bitcoin</a>
+            </div>
+          </div>
+        </div>
       </article>
       <article class="card info-card">
-        <span class="feature-icon" aria-hidden="true">i</span>
-        <h2>Uso responsável</h2>
-        <p>As datas servem apenas para consulta e organização. Este conteúdo não é aconselhamento financeiro nem recomendação de compra ou venda de ativos.</p>
+        <div class="about-article-content">
+          <span class="feature-icon" aria-hidden="true">±</span>
+          <div>
+            <h2>Calculadoras</h2>
+            <p>As duas ferramentas usam uma data de referência para calcular datas no calendário. A Calculadora de 500 dias mostra os marcos 500 dias antes e depois e informa a distância entre hoje e o marco anterior.</p>
+            <p>Em Dias personalizados, você escolhe quantos dias voltar e avançar. As ferramentas permanecem em páginas separadas para atender a cada tipo de consulta; suas estimativas servem para organização e não preveem preços nem recomendam compra ou venda.</p>
+            <div class="about-article-actions">
+              <a class="btn btn-primary" href="calculadora.html">Calculadora de 500 dias</a>
+              <a class="btn btn-secondary" href="calculadora-tempo.html">Dias personalizados</a>
+            </div>
+          </div>
+        </div>
       </article>
     </section>
 
-    <div class="actions section">
-      <a class="btn btn-primary" href="calculadora.html">Calculadora de 500 dias</a>
-      <a class="btn btn-secondary" href="calculadora-tempo.html">Dias personalizados</a>
-      <a class="btn btn-secondary" href="dados-bitcoin.html">Dados Bitcoin</a>
-      <a class="btn btn-secondary" href="halving-bitcoin.html">Halving Bitcoin</a>
-      <a class="btn btn-secondary" href="index.html">Voltar ao início</a>
-    </div>
   </main>
 
   <footer class="site-footer">

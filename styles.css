@@ -282,6 +282,15 @@ p {
   margin-bottom: 0;
 }
 
+.info-card p + p {
+  margin-top: 12px;
+}
+
+.info-card > .footer-link {
+  display: inline-block;
+  margin-top: 12px;
+}
+
 .section {
   margin-top: 54px;
 }
@@ -307,6 +316,32 @@ p {
   padding: 22px;
 }
 
+.about-articles {
+  grid-template-columns: 1fr;
+}
+
+.about-article-content {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.about-article-content .feature-icon {
+  margin-bottom: 0;
+}
+
+.about-article-content h2 {
+  margin-top: 0;
+}
+
+.about-article-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
 .feature-icon {
   display: grid;
   width: 40px;
@@ -328,6 +363,11 @@ p {
 .page-intro p {
   max-width: 650px;
   margin-bottom: 0;
+}
+
+.about-intro p {
+  max-width: none;
+  text-align: justify;
 }
 
 .calculator-card {
