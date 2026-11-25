@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#07131f">
-  <meta name="description" content="Acompanhe a cotação atual do Bitcoin, o índice de medo e ganância e o gráfico dos últimos sete dias.">
+  <meta name="description" content="Acompanhe a cotação do Bitcoin, indicadores de mercado como Mayer Multiple e MVRV, sentimento e histórico recente.">
   <title>Dados Bitcoin | Estatísticas Bitcoin</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -49,6 +49,30 @@
         <p class="market-sentiment" id="classificacaoSentimento">Carregando índice...</p>
         <p class="market-updated" id="atualizadoSentimento">Buscando índice...</p>
       </article>
+
+      <article class="card market-card">
+        <span class="eyebrow">Mayer Multiple</span>
+        <h2 class="market-value" id="valorMayer" aria-live="polite">Carregando...</h2>
+        <p class="market-secondary">Preço atual do Bitcoin dividido pela média móvel de 200 dias.</p>
+        <div class="index-meter index-meter-mayer" role="meter" aria-label="Mayer Multiple em escala visual de 0 a 3 vezes" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" hidden id="medidorMayer">
+          <span class="index-meter-marker" id="marcadorMayer"></span>
+        </div>
+        <p class="index-meter-scale">Escala até 3× · referência: 1× = média de 200 dias</p>
+        <p class="market-sentiment" id="classificacaoMayer">Aguardando o indicador...</p>
+        <p class="market-updated" id="atualizadoMayer">Buscando histórico de preços...</p>
+      </article>
+
+      <article class="card market-card">
+        <span class="eyebrow">MVRV</span>
+        <h2 class="market-value" id="valorMvrv" aria-live="polite">Carregando...</h2>
+        <p class="market-secondary">Valor de mercado dividido pelo valor realizado do Bitcoin.</p>
+        <div class="index-meter index-meter-mvrv" role="meter" aria-label="MVRV em escala visual de 0 a 4 vezes" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" hidden id="medidorMvrv">
+          <span class="index-meter-marker" id="marcadorMvrv"></span>
+        </div>
+        <p class="index-meter-scale">Escala até 4× · referência: 1× = valor realizado</p>
+        <p class="market-sentiment" id="classificacaoMvrv">Aguardando o indicador...</p>
+        <p class="market-updated" id="atualizadoMvrv">Buscando indicador...</p>
+      </article>
     </section>
 
     <section class="card market-chart-card" aria-labelledby="titulo-grafico">
@@ -76,7 +100,7 @@
 
     <div class="market-actions">
       <button class="btn btn-primary" id="atualizarDados" type="button">Atualizar tudo agora</button>
-      <p class="market-disclaimer">Fontes: Coinbase Exchange (cotação e gráfico), ExchangeRate-API (conversão aproximada para reais) e Alternative.me (índice). Os dados podem apresentar atraso e não constituem recomendação de investimento.</p>
+      <p class="market-disclaimer">Fontes: Coinbase Exchange (cotação, histórico e média móvel), ExchangeRate-API (conversão aproximada para reais), Alternative.me (índice de medo e ganância) e Coin Metrics (MVRV). As cores são uma referência visual, não sinais de compra ou venda. Os dados podem apresentar atraso e não constituem recomendação de investimento.</p>
     </div>
   </main>
 
@@ -99,6 +123,10 @@
       currency: 'USD',
       maximumFractionDigits: 2
     });
+    const formatoIndice = new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
     const periodosGrafico = {
       '24h': { granularity: 3600, horas: 24, descricao: 'nas últimas 24 horas' },
       '7d': { granularity: 86400, dias: 7, descricao: 'nos últimos 7 dias' },
@@ -112,6 +140,8 @@
     let pontosGraficoHistorico = null;
     let precoBitcoinAtual = null;
     let timestampPrecoAtual = null;
+    let mediaMovel200Dias = null;
+    let dataUltimoFechamentoMedia = null;
 
     function horarioAtualizacao() {
       return new Date().toLocaleTimeString('pt-BR', {
@@ -187,6 +217,7 @@
         precoBitcoinAtual = precoAtual;
         timestampPrecoAtual = timestamp;
         preco.textContent = formatoDolar.format(precoAtual);
+        atualizarMayerMultiple(precoAtual);
         await atualizarConversaoReal(precoAtual);
 
         try {
@@ -259,6 +290,132 @@
       }
     }
 
+    function atualizarMayerMultiple(precoAtual) {
+      if (!Number.isFinite(mediaMovel200Dias) || !Number.isFinite(precoAtual)) {
+        return;
+      }
+
+      const multiple = precoAtual / mediaMovel200Dias;
+      const descricao = multiple < 1
+        ? 'Abaixo da média móvel de 200 dias'
+        : multiple > 1
+          ? 'Acima da média móvel de 200 dias'
+          : 'Igual à média móvel de 200 dias';
+      document.getElementById('valorMayer').textContent = `${formatoIndice.format(multiple)}×`;
+      document.getElementById('classificacaoMayer').textContent = multiple > 3
+        ? `${descricao} · acima da escala visual`
+        : descricao;
+      atualizarIndicadorColorido('medidorMayer', 'marcadorMayer', multiple, 3, descricao);
+      const dataMedia = new Date(dataUltimoFechamentoMedia).toLocaleDateString('pt-BR', {
+        timeZone: 'UTC'
+      });
+      document.getElementById('atualizadoMayer').textContent = `Média de 200 dias até ${dataMedia} · cotação consultada às ${horarioAtualizacao()}`;
+    }
+
+    function atualizarIndicadorColorido(medidorId, marcadorId, valor, escalaMaxima, descricao) {
+      const medidor = document.getElementById(medidorId);
+      const valorNaEscala = Math.max(0, Math.min(valor, escalaMaxima));
+      medidor.setAttribute('aria-valuenow', String(valorNaEscala));
+      medidor.setAttribute('aria-valuetext', `${formatoIndice.format(valor)} vezes · ${descricao}`);
+      document.getElementById(marcadorId).style.left = `${(valorNaEscala / escalaMaxima) * 100}%`;
+      medidor.hidden = false;
+    }
+
+    async function carregarMayerMultiple() {
+      const valor = document.getElementById('valorMayer');
+      const atualizado = document.getElementById('atualizadoMayer');
+
+      try {
+        const fim = new Date();
+        fim.setUTCHours(0, 0, 0, 0);
+        const inicio = new Date(fim);
+        inicio.setUTCDate(inicio.getUTCDate() - 205);
+        const parametros = new URLSearchParams({
+          granularity: '86400',
+          start: inicio.toISOString(),
+          end: fim.toISOString()
+        });
+        const resposta = await fetch(`https://api.exchange.coinbase.com/products/BTC-USD/candles?${parametros}`, { cache: 'no-store' });
+        if (!resposta.ok) {
+          throw new Error(mensagemErroHTTP(resposta, 'o histórico para calcular o Mayer Multiple'));
+        }
+
+        const dados = await resposta.json();
+        if (
+          !Array.isArray(dados) ||
+          !dados.every((ponto) => Array.isArray(ponto) && Number.isFinite(ponto[0]) && Number.isFinite(ponto[4]) && ponto[4] > 0)
+        ) {
+          throw new Error('O histórico recebido para o Mayer Multiple está incompleto.');
+        }
+
+        const fechamentos = dados
+          .map((ponto) => [ponto[0], ponto[4]])
+          .sort((a, b) => a[0] - b[0])
+          .slice(-200);
+        if (fechamentos.length < 200) {
+          throw new Error('Ainda não há 200 fechamentos diários para calcular o Mayer Multiple.');
+        }
+
+        mediaMovel200Dias = fechamentos.reduce((soma, ponto) => soma + ponto[1], 0) / fechamentos.length;
+        dataUltimoFechamentoMedia = fechamentos[fechamentos.length - 1][0] * 1000;
+        if (!Number.isFinite(mediaMovel200Dias) || mediaMovel200Dias <= 0) {
+          throw new Error('Não foi possível calcular a média móvel de 200 dias.');
+        }
+
+        if (Number.isFinite(precoBitcoinAtual)) {
+          atualizarMayerMultiple(precoBitcoinAtual);
+        } else {
+          atualizado.textContent = 'Média móvel calculada; aguardando a cotação atual do Bitcoin.';
+        }
+      } catch (erro) {
+        document.getElementById('medidorMayer').hidden = true;
+        valor.textContent = 'Indisponível';
+        document.getElementById('classificacaoMayer').textContent = 'Indicador indisponível';
+        atualizado.textContent = erro instanceof Error
+          ? erro.message
+          : 'Não foi possível calcular o Mayer Multiple.';
+      }
+    }
+
+    async function carregarMvrv() {
+      const valor = document.getElementById('valorMvrv');
+      const atualizado = document.getElementById('atualizadoMvrv');
+
+      try {
+        const resposta = await fetch('https://community-api.coinmetrics.io/v4/timeseries/asset-metrics?assets=btc&metrics=CapMVRVCur&frequency=1d&page_size=1', { cache: 'no-store' });
+        if (!resposta.ok) {
+          throw new Error(mensagemErroHTTP(resposta, 'o MVRV'));
+        }
+
+        const dados = await resposta.json();
+        const indice = Array.isArray(dados.data) ? dados.data[0] : null;
+        const mvrv = indice ? Number(indice.CapMVRVCur) : NaN;
+        const timestamp = indice ? Date.parse(indice.time) : NaN;
+        if (!Number.isFinite(mvrv) || mvrv <= 0 || !Number.isFinite(timestamp)) {
+          throw new Error('O valor recebido para o MVRV está incompleto.');
+        }
+
+        const descricao = mvrv < 1
+          ? 'Abaixo do valor realizado'
+          : mvrv > 1
+            ? 'Acima do valor realizado'
+            : 'Igual ao valor realizado';
+        valor.textContent = `${formatoIndice.format(mvrv)}×`;
+        document.getElementById('classificacaoMvrv').textContent = mvrv > 4
+          ? `${descricao} · acima da escala visual`
+          : descricao;
+        atualizarIndicadorColorido('medidorMvrv', 'marcadorMvrv', mvrv, 4, descricao);
+        atualizado.textContent = `Dados de ${new Date(timestamp).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} · Coin Metrics`;
+      } catch (erro) {
+        document.getElementById('medidorMvrv').hidden = true;
+        valor.textContent = 'Indisponível';
+        document.getElementById('classificacaoMvrv').textContent = 'Indicador indisponível';
+        atualizado.textContent = erro instanceof Error
+          ? erro.message
+          : 'Não foi possível consultar o MVRV.';
+      }
+    }
+
     function desenharGrafico(pontos) {
       const grafico = document.getElementById('graficoBitcoin');
       const estado = document.getElementById('estadoGrafico');
@@ -300,6 +457,9 @@
       const [xFinal, yFinal] = coordenadas[coordenadas.length - 1];
       const valorFinal = valores[valores.length - 1];
       const posicaoTextoFinal = Math.max(topo + tamanhoFonte, Math.min(yFinal, topo + alturaGrafico));
+      const formatarData = (timestamp) => periodoGraficoSelecionado === '24h'
+        ? new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        : new Date(timestamp).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' });
 
       grafico.innerHTML = `
         <defs>
@@ -313,13 +473,68 @@
         <path d="${linha}" class="chart-line"></path>
         <circle cx="${xFinal}" cy="${yFinal}" r="6" class="chart-point"></circle>
         <text x="${xFinal + tamanhoFonte * 0.8}" y="${posicaoTextoFinal + tamanhoFonte * 0.35}" font-size="${tamanhoFonte}" class="chart-current-label">${formatoDolar.format(valorFinal)}</text>
+        <path d="${linha}" class="chart-interaction-line"></path>
+        <g class="chart-tooltip" visibility="hidden" aria-hidden="true">
+          <line class="chart-tooltip-crosshair" x1="0" y1="${topo}" x2="0" y2="${topo + alturaGrafico}"></line>
+          <circle class="chart-tooltip-point" cx="0" cy="0" r="5"></circle>
+          <rect class="chart-tooltip-box" x="0" y="0" width="154" height="48" rx="8"></rect>
+          <text class="chart-tooltip-price" x="10" y="19"></text>
+          <text class="chart-tooltip-date" x="10" y="37"></text>
+        </g>
       `;
+      const linhaInterativa = grafico.querySelector('.chart-interaction-line');
+      const tooltip = grafico.querySelector('.chart-tooltip');
+      const cruzamento = grafico.querySelector('.chart-tooltip-crosshair');
+      const pontoTooltip = grafico.querySelector('.chart-tooltip-point');
+      const caixaTooltip = grafico.querySelector('.chart-tooltip-box');
+      const precoTooltip = grafico.querySelector('.chart-tooltip-price');
+      const dataTooltip = grafico.querySelector('.chart-tooltip-date');
+
+      linhaInterativa.addEventListener('pointermove', (event) => {
+        const matriz = grafico.getScreenCTM();
+        if (!matriz) {
+          return;
+        }
+
+        const posicaoPonteiro = grafico.createSVGPoint();
+        posicaoPonteiro.x = event.clientX;
+        posicaoPonteiro.y = event.clientY;
+        const posicaoGrafico = posicaoPonteiro.matrixTransform(matriz.inverse());
+        const posicaoRelativa = (posicaoGrafico.x - margemEsquerda) / larguraGrafico;
+        const indice = Math.max(0, Math.min(
+          coordenadas.length - 1,
+          Math.round(posicaoRelativa * (coordenadas.length - 1))
+        ));
+        const [x, y] = coordenadas[indice];
+        const larguraTooltip = 154;
+        const posicaoTooltipX = x > largura - margemDireita - larguraTooltip
+          ? x - larguraTooltip - 12
+          : x + 12;
+        const xTooltip = Math.max(4, Math.min(posicaoTooltipX, largura - larguraTooltip - 4));
+        const yTooltip = y > topo + 58 ? y - 58 : y + 10;
+
+        cruzamento.setAttribute('x1', String(x));
+        cruzamento.setAttribute('x2', String(x));
+        pontoTooltip.setAttribute('cx', String(x));
+        pontoTooltip.setAttribute('cy', String(y));
+        caixaTooltip.setAttribute('x', String(xTooltip));
+        caixaTooltip.setAttribute('y', String(yTooltip));
+        precoTooltip.setAttribute('x', String(xTooltip + 10));
+        precoTooltip.setAttribute('y', String(yTooltip + 19));
+        dataTooltip.setAttribute('x', String(xTooltip + 10));
+        dataTooltip.setAttribute('y', String(yTooltip + 37));
+        precoTooltip.textContent = formatoDolar.format(valores[indice]);
+        dataTooltip.textContent = formatarData(pontos[indice][0]);
+        tooltip.setAttribute('visibility', 'visible');
+      });
+
+      linhaInterativa.addEventListener('pointerleave', () => {
+        tooltip.setAttribute('visibility', 'hidden');
+      });
+
       grafico.removeAttribute('hidden');
       estado.hidden = true;
       rotulos.hidden = false;
-      const formatarData = (timestamp) => periodoGraficoSelecionado === '24h'
-        ? new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        : new Date(timestamp).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' });
       document.getElementById('dataInicialGrafico').textContent = formatarData(pontos[0][0]);
       document.getElementById('dataFinalGrafico').textContent = formatarData(pontos[pontos.length - 1][0]);
       grafico.setAttribute('aria-label', `Preço do Bitcoin em dólares ${periodosGrafico[periodoGraficoSelecionado].descricao}: de ${formatoDolar.format(valores[0])} a ${formatoDolar.format(valores[valores.length - 1])}`);
@@ -414,7 +629,13 @@
       const botao = document.getElementById('atualizarDados');
       botao.disabled = true;
       botao.textContent = 'Atualizando...';
-      await Promise.all([carregarPreco(), carregarSentimento(), carregarGrafico()]);
+      await Promise.all([
+        carregarPreco(),
+        carregarSentimento(),
+        carregarGrafico(),
+        carregarMayerMultiple(),
+        carregarMvrv()
+      ]);
       botao.disabled = false;
       botao.textContent = 'Atualizar tudo agora';
     }

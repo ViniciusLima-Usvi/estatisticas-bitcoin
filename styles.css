@@ -489,6 +489,59 @@ input[type="number"] {
   transition: width 0.3s ease;
 }
 
+.index-meter {
+  position: relative;
+  height: 12px;
+  margin: 18px 0 8px;
+  border-radius: 999px;
+}
+
+.index-meter[hidden] {
+  display: none;
+}
+
+.index-meter-mayer {
+  --reference-position: 33.333%;
+  background: linear-gradient(90deg, #55bd83 0%, #f7bd4f 38%, #e45757 100%);
+}
+
+.index-meter-mvrv {
+  --reference-position: 25%;
+  background: linear-gradient(90deg, #55bd83 0%, #f7bd4f 30%, #e45757 100%);
+}
+
+.index-meter::before,
+.index-meter-marker {
+  position: absolute;
+  top: -4px;
+  height: 20px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+.index-meter::before {
+  left: var(--reference-position);
+  width: 2px;
+  background: rgba(255, 255, 255, 0.72);
+  content: "";
+}
+
+.index-meter-marker {
+  left: 0;
+  width: 5px;
+  border: 1px solid var(--background);
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45);
+  transition: left 0.3s ease;
+}
+
+.index-meter-scale {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
 .market-chart-card {
   margin-top: 18px;
 }
@@ -572,6 +625,57 @@ input[type="number"] {
   stroke: var(--background);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
+}
+
+.chart-interaction-line {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 24;
+  pointer-events: stroke;
+  cursor: crosshair;
+}
+
+.chart-tooltip {
+  pointer-events: none;
+}
+
+.chart-tooltip-crosshair {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-tooltip-point {
+  fill: #fff;
+  stroke: var(--primary);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-tooltip-box {
+  fill: #0d1727;
+  stroke: rgba(247, 147, 26, 0.55);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-tooltip-price,
+.chart-tooltip-date {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.chart-tooltip-price {
+  fill: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chart-tooltip-date {
+  fill: var(--muted);
+  font-size: 10px;
 }
 
 .chart-current-label {
