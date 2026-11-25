@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07131f">
+  <meta name="description" content="Calcule as datas de 500 dias antes e depois da data estimada do halving do Bitcoin.">
+  <title>Calculadora de datas | Estatísticas Bitcoin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">₿</span> Estatísticas Bitcoin</a>
+      <nav class="nav" aria-label="Menu principal">
+        <a href="index.html">Início</a>
+        <a href="dados-bitcoin.html">Dados Bitcoin</a>
+        <a href="halving-bitcoin.html">Halving Bitcoin</a>
+        <a class="active" href="calculadora.html" aria-current="page">Calculadora 500 dias</a>
+        <a href="calculadora-tempo.html">Dias personalizados</a>
+        <a href="sobre.html">Sobre</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container container-narrow" id="conteudo">
+    <div class="page-intro">
+      <span class="eyebrow">Ferramenta de datas</span>
+      <h1>Calculadora de 500 dias</h1>
+      <p>Informe uma data estimada para o halving e veja as datas 500 dias antes e depois, além da distância entre hoje e a data de compra calculada.</p>
+    </div>
+    <section class="card calculator-card" aria-labelledby="titulo-calculadora">
+      <h2 id="titulo-calculadora">Escolha a data estimada</h2>
+      <label class="field-label" for="dataHalving">Data estimada do halving</label>
+      <input type="date" id="dataHalving" value="2028-04-13" aria-describedby="ajuda-data">
+      <p class="helper-text" id="ajuda-data">A data real do próximo halving depende da produção dos blocos e pode mudar.</p>
+      <button class="btn btn-primary" id="calcular" type="button">Calcular datas</button>
+
+      <div class="result" id="saida" role="status" aria-live="polite" hidden></div>
+      <p class="notice">As datas são uma referência de calendário e não representam recomendação de compra ou venda.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Estatísticas Bitcoin · Conteúdo educativo, sem recomendação de investimento.</p>
+      <p>Criado por <a href="https://github.com/viniciusLima-cell" target="_blank" rel="noopener noreferrer">Vinicius Lima</a>.</p>
+      <a class="footer-link" href="sobre.html">Sobre o projeto</a>
+    </div>
+  </footer>
+
+  <script>
+    function calcular() {
+      const input = document.getElementById('dataHalving').value;
+      const saida = document.getElementById('saida');
+
+      if (!input) {
+        saida.textContent = 'Selecione uma data para calcular.';
+        saida.hidden = false;
+        return;
+      }
+
+      const halving = new Date(input + 'T12:00:00');
+      if (Number.isNaN(halving.getTime())) {
+        saida.textContent = 'A data informada não é válida. Escolha outra data.';
+        saida.hidden = false;
+        return;
+      }
+
+      const compra = new Date(halving);
+      compra.setDate(halving.getDate() - 500);
+
+      const venda = new Date(halving);
+      venda.setDate(halving.getDate() + 500);
+
+      const agora = new Date();
+      const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 12);
+      const diffCompra = Math.ceil((compra - hoje) / (1000 * 60 * 60 * 24));
+      const contagem = diffCompra > 0
+        ? `Faltam ${diffCompra} dias para a data de compra calculada.`
+        : diffCompra < 0
+          ? `A data de compra calculada foi há ${Math.abs(diffCompra)} dias.`
+          : 'A data de compra calculada é hoje.';
+
+      saida.innerHTML = `
+        <strong>Datas calculadas</strong>
+        <div class="result-grid">
+          <div class="result-item"><span>500 dias antes</span><strong>${compra.toLocaleDateString('pt-BR')}</strong></div>
+          <div class="result-item"><span>500 dias depois</span><strong>${venda.toLocaleDateString('pt-BR')}</strong></div>
+        </div>
+        <p class="result-count">${contagem}</p>
+      `;
+      saida.hidden = false;
+    }
+
+    document.getElementById('calcular').addEventListener('click', calcular);
+    document.getElementById('dataHalving').addEventListener('change', calcular);
+    calcular();
+  </script>
+</body>
+</html>

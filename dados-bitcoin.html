@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07131f">
+  <meta name="description" content="Acompanhe a cotação atual do Bitcoin, o índice de medo e ganância e o gráfico dos últimos sete dias.">
+  <title>Dados Bitcoin | Estatísticas Bitcoin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">₿</span> Estatísticas Bitcoin</a>
+      <nav class="nav" aria-label="Menu principal">
+        <a href="index.html">Início</a>
+        <a class="active" href="dados-bitcoin.html" aria-current="page">Dados Bitcoin</a>
+        <a href="halving-bitcoin.html">Halving Bitcoin</a>
+        <a href="calculadora.html">Calculadora 500 dias</a>
+        <a href="calculadora-tempo.html">Dias personalizados</a>
+        <a href="sobre.html">Sobre</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" id="conteudo">
+    <section class="page-intro market-intro">
+      <span class="eyebrow">Mercado Bitcoin</span>
+      <h1>Dados Bitcoin</h1>
+      <p>Cotação, sentimento do mercado e histórico recente em um só lugar. Os dados são informativos e podem ter alguns minutos de atraso.</p>
+    </section>
+
+    <section class="market-grid" aria-label="Indicadores do Bitcoin">
+      <article class="card market-card">
+        <span class="eyebrow">Cotação atual em dólar</span>
+        <h2 class="market-value" id="precoBitcoin" aria-live="polite">Carregando...</h2>
+        <p class="market-secondary" id="precoReais">Conversão aproximada em reais: aguardando dados</p>
+        <p class="market-change" id="variacaoBitcoin"></p>
+        <p class="market-updated" id="atualizadoPreco">Buscando cotação...</p>
+      </article>
+
+      <article class="card market-card">
+        <span class="eyebrow">Índice de medo e ganância</span>
+        <h2 class="market-value"><span id="valorSentimento">--</span><span class="market-out-of"> / 100</span></h2>
+        <div class="sentiment-meter" role="meter" aria-label="Índice de medo e ganância" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="medidorSentimento">
+          <span class="sentiment-meter-fill" id="preenchimentoSentimento"></span>
+        </div>
+        <p class="market-sentiment" id="classificacaoSentimento">Carregando índice...</p>
+        <p class="market-updated" id="atualizadoSentimento">Buscando índice...</p>
+      </article>
+    </section>
+
+    <section class="card market-chart-card" aria-labelledby="titulo-grafico">
+      <div class="market-chart-heading">
+        <div>
+          <span class="eyebrow">Histórico recente</span>
+          <h2 id="titulo-grafico">Preço do Bitcoin em dólares</h2>
+        </div>
+        <div class="chart-controls" role="group" aria-label="Período do gráfico">
+          <button class="chart-range" id="periodo24h" type="button" data-periodo="24h" aria-pressed="false">Últimas 24h</button>
+          <button class="chart-range" id="periodo7d" type="button" data-periodo="7d" aria-pressed="true">Últimos 7 dias</button>
+          <button class="chart-range" id="periodo30d" type="button" data-periodo="30d" aria-pressed="false">Últimos 30 dias</button>
+        </div>
+      </div>
+      <div class="chart-container" id="graficoContainer">
+        <p class="chart-message" id="estadoGrafico" role="status" aria-live="polite">Carregando gráfico...</p>
+        <svg id="graficoBitcoin" class="bitcoin-chart" role="img" aria-label="Gráfico do preço do Bitcoin em dólares nos últimos sete dias" viewBox="0 0 800 320" preserveAspectRatio="none" hidden></svg>
+      </div>
+      <div class="chart-labels" id="rotulosGrafico" aria-hidden="true" hidden>
+        <span id="dataInicialGrafico"></span>
+        <span id="dataFinalGrafico"></span>
+      </div>
+      <p class="market-updated" id="atualizadoGrafico">Buscando histórico de preços...</p>
+    </section>
+
+    <div class="market-actions">
+      <button class="btn btn-primary" id="atualizarDados" type="button">Atualizar tudo agora</button>
+      <p class="market-disclaimer">Fontes: Coinbase Exchange (cotação e gráfico), ExchangeRate-API (conversão aproximada para reais) e Alternative.me (índice). Os dados podem apresentar atraso e não constituem recomendação de investimento.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Estatísticas Bitcoin · Conteúdo educativo, sem recomendação de investimento.</p>
+      <p>Criado por <a href="https://github.com/viniciusLima-cell" target="_blank" rel="noopener noreferrer">Vinicius Lima</a>.</p>
+      <a class="footer-link" href="sobre.html">Sobre o projeto</a>
+    </div>
+  </footer>
+
+  <script>
+    const formatoReal = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 2
+    });
+    const formatoDolar = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2
+    });
+    const periodosGrafico = {
+      '24h': { granularity: 3600, horas: 24, descricao: 'nas últimas 24 horas' },
+      '7d': { granularity: 86400, dias: 7, descricao: 'nos últimos 7 dias' },
+      '30d': { granularity: 86400, dias: 30, descricao: 'nos últimos 30 dias' }
+    };
+    let taxaDolarParaReal = null;
+    let consultaCambio = 0;
+    let periodoGraficoSelecionado = '7d';
+    let requisicaoGrafico = 0;
+    let pontosGraficoAtual = null;
+    let pontosGraficoHistorico = null;
+    let precoBitcoinAtual = null;
+    let timestampPrecoAtual = null;
+
+    function horarioAtualizacao() {
+      return new Date().toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    function classificarSentimento(classificacao) {
+      const traducoes = {
+        'Extreme Fear': 'Medo extremo',
+        'Fear': 'Medo',
+        'Neutral': 'Neutro',
+        'Greed': 'Ganância',
+        'Extreme Greed': 'Ganância extrema'
+      };
+      return traducoes[classificacao] || classificacao;
+    }
+
+    function mensagemErroHTTP(resposta, recurso) {
+      return resposta.status === 429
+        ? `O limite de consultas da fonte foi atingido ao buscar ${recurso}. Aguarde alguns minutos e tente novamente.`
+        : `Não foi possível consultar ${recurso} (HTTP ${resposta.status}).`;
+    }
+
+    async function atualizarConversaoReal(precoUsd) {
+      const reais = document.getElementById('precoReais');
+
+      if (!taxaDolarParaReal || Date.now() - consultaCambio >= 6 * 60 * 60 * 1000) {
+        try {
+          const resposta = await fetch('https://open.er-api.com/v6/latest/USD', { cache: 'no-store' });
+          if (!resposta.ok) {
+            throw new Error(mensagemErroHTTP(resposta, 'a conversão de moeda'));
+          }
+
+          const dados = await resposta.json();
+          if (dados.result !== 'success' || !Number.isFinite(dados.rates && dados.rates.BRL)) {
+            throw new Error('A taxa de conversão para reais está indisponível.');
+          }
+
+          taxaDolarParaReal = dados.rates.BRL;
+          consultaCambio = Date.now();
+        } catch (erro) {
+          reais.textContent = erro instanceof Error
+            ? erro.message
+            : 'A conversão aproximada para reais está indisponível.';
+          return;
+        }
+      }
+
+      reais.textContent = `Conversão aproximada em reais: ${formatoReal.format(precoUsd * taxaDolarParaReal)}`;
+    }
+
+    async function carregarPreco() {
+      const preco = document.getElementById('precoBitcoin');
+      const variacao = document.getElementById('variacaoBitcoin');
+      const atualizado = document.getElementById('atualizadoPreco');
+
+      try {
+        const resposta = await fetch('https://api.exchange.coinbase.com/products/BTC-USD/ticker', { cache: 'no-store' });
+        if (!resposta.ok) {
+          throw new Error(mensagemErroHTTP(resposta, 'a cotação'));
+        }
+
+        const dados = await resposta.json();
+        const precoAtual = Number(dados.price);
+        const timestamp = Date.parse(dados.time);
+        if (!Number.isFinite(precoAtual) || precoAtual <= 0 || !Number.isFinite(timestamp)) {
+          throw new Error('A cotação recebida está incompleta.');
+        }
+
+        precoBitcoinAtual = precoAtual;
+        timestampPrecoAtual = timestamp;
+        preco.textContent = formatoDolar.format(precoAtual);
+        await atualizarConversaoReal(precoAtual);
+
+        try {
+          const respostaStats = await fetch('https://api.exchange.coinbase.com/products/BTC-USD/stats', { cache: 'no-store' });
+          if (!respostaStats.ok) {
+            throw new Error(mensagemErroHTTP(respostaStats, 'a variação de 24 horas'));
+          }
+
+          const stats = await respostaStats.json();
+          const abertura = Number(stats.open);
+          if (!Number.isFinite(abertura) || abertura <= 0) {
+            throw new Error('A variação de 24 horas está indisponível.');
+          }
+
+          const percentual = ((precoAtual - abertura) / abertura) * 100;
+          variacao.textContent = `${percentual >= 0 ? '+' : ''}${percentual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% nas últimas 24 horas`;
+          variacao.classList.toggle('market-positive', percentual >= 0);
+          variacao.classList.toggle('market-negative', percentual < 0);
+        } catch (erro) {
+          variacao.textContent = erro instanceof Error ? erro.message : 'A variação de 24 horas está indisponível.';
+          variacao.classList.remove('market-positive', 'market-negative');
+        }
+
+        const horarioUltimoNegocio = new Date(timestamp).toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        atualizado.textContent = `Consulta às ${horarioAtualizacao()} · último negócio às ${horarioUltimoNegocio}`;
+        if (pontosGraficoHistorico) {
+          desenharGrafico([...pontosGraficoHistorico, [timestampPrecoAtual, precoBitcoinAtual]]);
+          document.getElementById('atualizadoGrafico').textContent = `Ponta da linha consultada às ${horarioAtualizacao()}`;
+        }
+      } catch (erro) {
+        atualizado.textContent = erro instanceof Error ? erro.message : 'Não foi possível atualizar a cotação.';
+      }
+    }
+
+    async function carregarSentimento() {
+      const valor = document.getElementById('valorSentimento');
+      const classificacao = document.getElementById('classificacaoSentimento');
+      const medidor = document.getElementById('medidorSentimento');
+      const preenchimento = document.getElementById('preenchimentoSentimento');
+      const atualizado = document.getElementById('atualizadoSentimento');
+
+      try {
+        const resposta = await fetch('https://api.alternative.me/fng/?limit=1&format=json', { cache: 'no-store' });
+        if (!resposta.ok) {
+          throw new Error(mensagemErroHTTP(resposta, 'o índice'));
+        }
+
+        const dados = await resposta.json();
+        const indice = dados.data && dados.data[0];
+        const numero = indice ? Number(indice.value) : NaN;
+        if (!Number.isInteger(numero) || numero < 0 || numero > 100 || !indice.value_classification) {
+          throw new Error('O índice recebido está incompleto.');
+        }
+
+        valor.textContent = String(numero);
+        classificacao.textContent = classificarSentimento(indice.value_classification);
+        medidor.setAttribute('aria-valuenow', String(numero));
+        preenchimento.style.width = `${numero}%`;
+        const timestamp = Number(indice.timestamp);
+        atualizado.textContent = Number.isFinite(timestamp)
+          ? `Índice de ${new Date(timestamp * 1000).toLocaleDateString('pt-BR')}`
+          : `Consultado às ${horarioAtualizacao()}`;
+      } catch (erro) {
+        classificacao.textContent = erro instanceof Error ? erro.message : 'Não foi possível atualizar o índice.';
+        atualizado.textContent = 'Tente atualizar novamente mais tarde.';
+      }
+    }
+
+    function desenharGrafico(pontos) {
+      const grafico = document.getElementById('graficoBitcoin');
+      const estado = document.getElementById('estadoGrafico');
+      const rotulos = document.getElementById('rotulosGrafico');
+      pontosGraficoAtual = pontos;
+      const valores = pontos.map((ponto) => ponto[1]);
+      const menor = Math.min(...valores);
+      const maior = Math.max(...valores);
+      const margem = (maior - menor) * 0.12 || maior * 0.02 || 1;
+      const minimo = Math.max(0, menor - margem);
+      const maximo = maior + margem;
+      const larguraContainer = document.getElementById('graficoContainer').clientWidth;
+      const largura = Math.max(larguraContainer, 1);
+      const compacto = largura < 480;
+      const altura = Number.parseFloat(getComputedStyle(grafico).height) || 320;
+      const margemEsquerda = compacto ? 64 : 76;
+      const margemDireita = compacto ? 72 : 88;
+      const larguraGrafico = largura - margemEsquerda - margemDireita;
+      const topo = 18;
+      const alturaGrafico = altura - topo * 2;
+      const tamanhoFonte = compacto ? 10 : 12;
+      const faixa = maximo - minimo;
+      grafico.setAttribute('viewBox', `0 0 ${largura} ${altura}`);
+      const coordenadas = pontos.map((ponto, indice) => {
+        const x = margemEsquerda + (indice / Math.max(pontos.length - 1, 1)) * larguraGrafico;
+        const y = topo + ((maximo - ponto[1]) / faixa) * alturaGrafico;
+        return [x, y];
+      });
+      const linha = coordenadas.map(([x, y], indice) => `${indice === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`).join(' ');
+      const area = `${linha} L ${margemEsquerda + larguraGrafico} ${topo + alturaGrafico} L ${margemEsquerda} ${topo + alturaGrafico} Z`;
+      const linhasGrade = [0, 1, 2, 3].map((indice) => {
+        const y = topo + (alturaGrafico / 3) * indice;
+        const valor = maximo - (faixa / 3) * indice;
+        return `
+          <line x1="${margemEsquerda}" y1="${y}" x2="${margemEsquerda + larguraGrafico}" y2="${y}" class="chart-grid-line"></line>
+          <text x="${margemEsquerda - 12}" y="${y + tamanhoFonte * 0.35}" text-anchor="end" font-size="${tamanhoFonte}" class="chart-axis-label">${formatoDolar.format(valor)}</text>
+        `;
+      }).join('');
+      const [xFinal, yFinal] = coordenadas[coordenadas.length - 1];
+      const valorFinal = valores[valores.length - 1];
+      const posicaoTextoFinal = Math.max(topo + tamanhoFonte, Math.min(yFinal, topo + alturaGrafico));
+
+      grafico.innerHTML = `
+        <defs>
+          <linearGradient id="preenchimentoGrafico" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#f7931a" stop-opacity="0.28"></stop>
+            <stop offset="100%" stop-color="#f7931a" stop-opacity="0"></stop>
+          </linearGradient>
+        </defs>
+        ${linhasGrade}
+        <path d="${area}" class="chart-area"></path>
+        <path d="${linha}" class="chart-line"></path>
+        <circle cx="${xFinal}" cy="${yFinal}" r="6" class="chart-point"></circle>
+        <text x="${xFinal + tamanhoFonte * 0.8}" y="${posicaoTextoFinal + tamanhoFonte * 0.35}" font-size="${tamanhoFonte}" class="chart-current-label">${formatoDolar.format(valorFinal)}</text>
+      `;
+      grafico.removeAttribute('hidden');
+      estado.hidden = true;
+      rotulos.hidden = false;
+      const formatarData = (timestamp) => periodoGraficoSelecionado === '24h'
+        ? new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        : new Date(timestamp).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' });
+      document.getElementById('dataInicialGrafico').textContent = formatarData(pontos[0][0]);
+      document.getElementById('dataFinalGrafico').textContent = formatarData(pontos[pontos.length - 1][0]);
+      grafico.setAttribute('aria-label', `Preço do Bitcoin em dólares ${periodosGrafico[periodoGraficoSelecionado].descricao}: de ${formatoDolar.format(valores[0])} a ${formatoDolar.format(valores[valores.length - 1])}`);
+    }
+
+    async function carregarGrafico() {
+      const idRequisicao = ++requisicaoGrafico;
+      const periodo = periodoGraficoSelecionado;
+      const configuracao = periodosGrafico[periodo];
+      const estado = document.getElementById('estadoGrafico');
+      const atualizado = document.getElementById('atualizadoGrafico');
+
+      try {
+        const fim = new Date();
+        const inicio = new Date(fim);
+        let inicioConsulta;
+        let fimConsulta;
+        if (periodo === '24h') {
+          inicio.setTime(fim.getTime() - configuracao.horas * 60 * 60 * 1000);
+          inicioConsulta = inicio.toISOString();
+          fimConsulta = fim.toISOString();
+        } else {
+          fim.setUTCDate(fim.getUTCDate() + 1);
+          inicio.setTime(fim.getTime());
+          inicio.setUTCDate(inicio.getUTCDate() - configuracao.dias);
+          inicioConsulta = `${inicio.toISOString().slice(0, 10)}T00:00:00Z`;
+          fimConsulta = `${fim.toISOString().slice(0, 10)}T00:00:00Z`;
+        }
+        const parametros = new URLSearchParams({
+          granularity: String(configuracao.granularity),
+          start: inicioConsulta,
+          end: fimConsulta
+        });
+        const resposta = await fetch(`https://api.exchange.coinbase.com/products/BTC-USD/candles?${parametros}`, { cache: 'no-store' });
+        if (!resposta.ok) {
+          throw new Error(mensagemErroHTTP(resposta, 'o histórico de preços'));
+        }
+
+        const dados = await resposta.json();
+        if (idRequisicao !== requisicaoGrafico) {
+          return;
+        }
+        if (
+          !Array.isArray(dados) ||
+          dados.length < 2 ||
+          !dados.every((ponto) => Array.isArray(ponto) && ponto.length >= 5 && Number.isFinite(ponto[0]) && Number.isFinite(ponto[4]))
+        ) {
+          throw new Error('O histórico recebido está incompleto.');
+        }
+
+        pontosGraficoHistorico = dados
+          .map((ponto) => [ponto[0] * 1000, ponto[4]])
+          .sort((a, b) => a[0] - b[0]);
+        const pontos = Number.isFinite(precoBitcoinAtual) && Number.isFinite(timestampPrecoAtual)
+          ? [...pontosGraficoHistorico, [timestampPrecoAtual, precoBitcoinAtual]]
+          : pontosGraficoHistorico;
+        desenharGrafico(pontos);
+        atualizado.textContent = `Gráfico consultado às ${horarioAtualizacao()}`;
+      } catch (erro) {
+        if (idRequisicao !== requisicaoGrafico) {
+          return;
+        }
+        estado.hidden = false;
+        estado.textContent = erro instanceof Error ? erro.message : 'Não foi possível atualizar o gráfico.';
+        atualizado.textContent = 'Tente atualizar novamente mais tarde.';
+      }
+    }
+
+    function selecionarPeriodoGrafico(event) {
+      const botao = event.currentTarget;
+      const periodo = botao.dataset.periodo;
+      if (!periodosGrafico[periodo]) {
+        return;
+      }
+
+      periodoGraficoSelecionado = periodo;
+      document.getElementById('periodo24h').setAttribute('aria-pressed', String(periodo === '24h'));
+      document.getElementById('periodo7d').setAttribute('aria-pressed', String(periodo === '7d'));
+      document.getElementById('periodo30d').setAttribute('aria-pressed', String(periodo === '30d'));
+      pontosGraficoAtual = null;
+      pontosGraficoHistorico = null;
+      document.getElementById('graficoBitcoin').setAttribute('hidden', '');
+      document.getElementById('rotulosGrafico').hidden = true;
+      const estado = document.getElementById('estadoGrafico');
+      estado.textContent = 'Carregando gráfico...';
+      estado.hidden = false;
+      document.getElementById('atualizadoGrafico').textContent = 'Buscando histórico de preços...';
+      carregarGrafico();
+    }
+
+    async function atualizarDados() {
+      const botao = document.getElementById('atualizarDados');
+      botao.disabled = true;
+      botao.textContent = 'Atualizando...';
+      await Promise.all([carregarPreco(), carregarSentimento(), carregarGrafico()]);
+      botao.disabled = false;
+      botao.textContent = 'Atualizar tudo agora';
+    }
+
+    document.getElementById('atualizarDados').addEventListener('click', atualizarDados);
+    document.getElementById('periodo24h').addEventListener('click', selecionarPeriodoGrafico);
+    document.getElementById('periodo7d').addEventListener('click', selecionarPeriodoGrafico);
+    document.getElementById('periodo30d').addEventListener('click', selecionarPeriodoGrafico);
+    window.addEventListener('resize', () => {
+      if (pontosGraficoAtual) {
+        desenharGrafico(pontosGraficoAtual);
+      }
+    });
+    atualizarDados();
+    window.setInterval(carregarPreco, 300000);
+    window.setInterval(carregarGrafico, 900000);
+    window.setInterval(carregarSentimento, 3600000);
+  </script>
+</body>
+</html>

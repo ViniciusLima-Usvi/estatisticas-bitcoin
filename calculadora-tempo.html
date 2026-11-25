@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07131f">
+  <meta name="description" content="Calcule datas anteriores e posteriores a uma data de referência, escolhendo quantos dias deseja.">
+  <title>Calculadora de tempo | Estatísticas Bitcoin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">₿</span> Estatísticas Bitcoin</a>
+      <nav class="nav" aria-label="Menu principal">
+        <a href="index.html">Início</a>
+        <a href="dados-bitcoin.html">Dados Bitcoin</a>
+        <a href="halving-bitcoin.html">Halving Bitcoin</a>
+        <a href="calculadora.html">Calculadora 500 dias</a>
+        <a class="active" href="calculadora-tempo.html" aria-current="page">Dias personalizados</a>
+        <a href="sobre.html">Sobre</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container container-narrow" id="conteudo">
+    <div class="page-intro">
+      <span class="eyebrow">Ferramenta de datas</span>
+      <h1>Calculadora de tempo</h1>
+      <p>Escolha uma data de referência e informe quantos dias deseja voltar e avançar no calendário.</p>
+    </div>
+    <section class="card calculator-card" aria-labelledby="titulo-calculadora">
+      <h2 id="titulo-calculadora">Defina os períodos</h2>
+      <label class="field-label" for="dataReferencia">Data de referência</label>
+      <input type="date" id="dataReferencia" value="2028-04-13" aria-describedby="ajuda-data">
+      <p class="helper-text" id="ajuda-data">A data estimada do próximo halving está preenchida como referência, mas você pode alterá-la.</p>
+
+      <label class="field-label" for="diasAntes">Quantos dias para trás?</label>
+      <input type="number" id="diasAntes" min="0" step="1" value="500" inputmode="numeric">
+
+      <label class="field-label" for="diasDepois">Quantos dias para frente?</label>
+      <input type="number" id="diasDepois" min="0" step="1" value="500" inputmode="numeric">
+
+      <button class="btn btn-primary" id="calcular" type="button">Calcular datas</button>
+      <div class="result" id="saida" role="status" aria-live="polite" hidden></div>
+      <p class="notice">As datas são uma referência de calendário e não representam recomendação de compra ou venda.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Estatísticas Bitcoin · Conteúdo educativo, sem recomendação de investimento.</p>
+      <p>Criado por <a href="https://github.com/viniciusLima-cell" target="_blank" rel="noopener noreferrer">Vinicius Lima</a>.</p>
+      <a class="footer-link" href="sobre.html">Sobre o projeto</a>
+    </div>
+  </footer>
+
+  <script>
+    function calcular() {
+      const dataInput = document.getElementById('dataReferencia').value;
+      const diasAntesInput = document.getElementById('diasAntes').value;
+      const diasDepoisInput = document.getElementById('diasDepois').value;
+      const saida = document.getElementById('saida');
+
+      if (!dataInput || diasAntesInput === '' || diasDepoisInput === '') {
+        saida.textContent = 'Preencha a data de referência e os dois períodos em dias.';
+        saida.hidden = false;
+        return;
+      }
+
+      const [ano, mes, dia] = dataInput.split('-').map(Number);
+      const referencia = new Date(ano, mes - 1, dia, 12);
+      if (
+        Number.isNaN(referencia.getTime()) ||
+        referencia.getFullYear() !== ano ||
+        referencia.getMonth() !== mes - 1 ||
+        referencia.getDate() !== dia
+      ) {
+        saida.textContent = 'A data informada não é válida. Escolha outra data.';
+        saida.hidden = false;
+        return;
+      }
+
+      const diasAntes = Number(diasAntesInput);
+      const diasDepois = Number(diasDepoisInput);
+      if (
+        !Number.isSafeInteger(diasAntes) ||
+        !Number.isSafeInteger(diasDepois) ||
+        diasAntes < 0 ||
+        diasDepois < 0
+      ) {
+        saida.textContent = 'Informe uma quantidade inteira de dias igual ou maior que zero.';
+        saida.hidden = false;
+        return;
+      }
+
+      const dataAnterior = new Date(referencia);
+      dataAnterior.setDate(dataAnterior.getDate() - diasAntes);
+      const dataPosterior = new Date(referencia);
+      dataPosterior.setDate(dataPosterior.getDate() + diasDepois);
+      if (Number.isNaN(dataAnterior.getTime()) || Number.isNaN(dataPosterior.getTime())) {
+        saida.textContent = 'Não foi possível calcular essas datas. Tente informar períodos menores.';
+        saida.hidden = false;
+        return;
+      }
+
+      const textoAntes = diasAntes === 1 ? '1 dia antes' : `${diasAntes} dias antes`;
+      const textoDepois = diasDepois === 1 ? '1 dia depois' : `${diasDepois} dias depois`;
+      saida.innerHTML = `
+        <strong>Datas calculadas</strong>
+        <div class="result-grid">
+          <div class="result-item"><span>${textoAntes}</span><strong>${dataAnterior.toLocaleDateString('pt-BR')}</strong></div>
+          <div class="result-item"><span>${textoDepois}</span><strong>${dataPosterior.toLocaleDateString('pt-BR')}</strong></div>
+        </div>
+        <p class="result-count">Data de referência: ${referencia.toLocaleDateString('pt-BR')}</p>
+      `;
+      saida.hidden = false;
+    }
+
+    document.getElementById('calcular').addEventListener('click', calcular);
+    document.getElementById('dataReferencia').addEventListener('change', calcular);
+    document.getElementById('diasAntes').addEventListener('change', calcular);
+    document.getElementById('diasDepois').addEventListener('change', calcular);
+    calcular();
+  </script>
+</body>
+</html>
