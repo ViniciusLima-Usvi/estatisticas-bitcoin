@@ -490,8 +490,10 @@
       const caixaTooltip = grafico.querySelector('.chart-tooltip-box');
       const precoTooltip = grafico.querySelector('.chart-tooltip-price');
       const dataTooltip = grafico.querySelector('.chart-tooltip-date');
+      let temporizadorTooltip;
 
       linhaInterativa.addEventListener('pointermove', (event) => {
+        clearTimeout(temporizadorTooltip);
         const matriz = grafico.getScreenCTM();
         if (!matriz) {
           return;
@@ -529,7 +531,16 @@
         tooltip.setAttribute('visibility', 'visible');
       });
 
-      linhaInterativa.addEventListener('pointerleave', () => {
+      linhaInterativa.addEventListener('pointerleave', (event) => {
+        if (event.pointerType === 'touch') {
+          clearTimeout(temporizadorTooltip);
+          temporizadorTooltip = setTimeout(() => {
+            tooltip.setAttribute('visibility', 'hidden');
+          }, 4000);
+          return;
+        }
+
+        clearTimeout(temporizadorTooltip);
         tooltip.setAttribute('visibility', 'hidden');
       });
 
