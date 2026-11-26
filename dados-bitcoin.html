@@ -8,22 +8,11 @@
   <title>Dados Bitcoin | Estatísticas Bitcoin</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="styles.css">
+  <script src="site.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-  <header class="site-header">
-    <div class="nav-wrap">
-      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">₿</span> Estatísticas Bitcoin</a>
-      <nav class="nav" aria-label="Menu principal">
-        <a href="index.html">Início</a>
-        <a class="active" href="dados-bitcoin.html" aria-current="page">Dados Bitcoin</a>
-        <a href="halving-bitcoin.html">Halving Bitcoin</a>
-        <a href="calculadora.html">Calculadora 500 dias</a>
-        <a href="calculadora-tempo.html">Dias personalizados</a>
-        <a href="sobre.html">Sobre</a>
-      </nav>
-    </div>
-  </header>
+  <header class="site-header" id="site-header"></header>
 
   <main class="container" id="conteudo">
     <section class="page-intro market-intro">
@@ -106,13 +95,7 @@
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <p>Estatísticas Bitcoin · Conteúdo educativo, sem recomendação de investimento.</p>
-      <p>Criado por <a href="https://github.com/viniciusLima-cell" target="_blank" rel="noopener noreferrer">Vinicius Lima</a>.</p>
-      <a class="footer-link" href="sobre.html">Sobre o projeto</a>
-    </div>
-  </footer>
+  <footer class="site-footer" id="site-footer"></footer>
 
   <script>
     const formatoReal = new Intl.NumberFormat('pt-BR', {
