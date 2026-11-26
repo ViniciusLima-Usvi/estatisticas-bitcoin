@@ -847,14 +847,19 @@ input[type="number"] {
 @media (max-width: 980px) {
   .nav-wrap {
     min-height: auto;
-    flex-wrap: wrap;
   }
 
   .nav {
-    width: 100%;
     max-width: 100%;
-    flex-wrap: wrap;
-    overflow-x: hidden;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+  }
+
+  .nav a {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 
   .footer-inner {
@@ -865,6 +870,18 @@ input[type="number"] {
 
   .footer-inner p {
     min-width: min(280px, 100%);
+  }
+}
+
+@media (max-width: 980px) and (orientation: landscape) {
+  .nav-wrap {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav {
+    width: 100%;
   }
 }
 
