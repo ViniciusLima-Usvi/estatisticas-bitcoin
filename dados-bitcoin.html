@@ -45,8 +45,9 @@
         <span class="eyebrow">Índice de medo e ganância</span>
         <h2 class="market-value"><span id="valorSentimento">--</span><span class="market-out-of"> / 100</span></h2>
         <div class="sentiment-meter" role="meter" aria-label="Índice de medo e ganância" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="medidorSentimento">
-          <span class="sentiment-meter-fill" id="preenchimentoSentimento"></span>
+          <span class="sentiment-meter-marker" id="marcadorSentimento"></span>
         </div>
+        <p class="index-meter-scale">0 = medo extremo · 100 = ganância extrema</p>
         <p class="market-sentiment" id="classificacaoSentimento">Carregando índice...</p>
         <p class="market-updated" id="atualizadoSentimento">Buscando índice...</p>
       </article>
@@ -261,7 +262,6 @@
       const valor = document.getElementById('valorSentimento');
       const classificacao = document.getElementById('classificacaoSentimento');
       const medidor = document.getElementById('medidorSentimento');
-      const preenchimento = document.getElementById('preenchimentoSentimento');
       const atualizado = document.getElementById('atualizadoSentimento');
 
       try {
@@ -280,7 +280,7 @@
         valor.textContent = String(numero);
         classificacao.textContent = classificarSentimento(indice.value_classification);
         medidor.setAttribute('aria-valuenow', String(numero));
-        preenchimento.style.width = `${numero}%`;
+        document.getElementById('marcadorSentimento').style.left = `${numero}%`;
         const timestamp = Number(indice.timestamp);
         atualizado.textContent = Number.isFinite(timestamp)
           ? `Índice de ${new Date(timestamp * 1000).toLocaleDateString('pt-BR')}`
