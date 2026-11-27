@@ -1,4 +1,5 @@
 :root {
+  /* Cores e superfícies compartilhadas para manter o tema consistente no site. */
   color-scheme: dark;
   --background: #07131f;
   --surface: rgba(15, 23, 42, 0.84);
@@ -15,6 +16,7 @@
   box-sizing: border-box;
 }
 
+/* Configuração básica do documento e estilos compartilhados de acessibilidade. */
 html {
   min-width: 320px;
   scroll-behavior: smooth;
@@ -60,7 +62,9 @@ input:focus-visible {
   transform: translateY(0);
 }
 
+/* Cabeçalho e navegação compartilhados por todas as páginas. */
 .site-header {
+  /* Mantém a navegação acessível durante a rolagem. */
   position: sticky;
   top: 0;
   z-index: 10;
@@ -134,7 +138,9 @@ main {
   flex: 1;
 }
 
+/* Larguras de conteúdo e componentes reutilizados nas páginas. */
 .container {
+  /* Centraliza o conteúdo e limita a largura em telas grandes. */
   width: min(1080px, 100%);
   margin: 0 auto;
   padding: 56px 20px 76px;
@@ -185,6 +191,7 @@ p {
 }
 
 .card {
+  /* Base visual reutilizada por cartões de conteúdo, formulários e indicadores. */
   border: 1px solid var(--line);
   border-radius: 22px;
   background: linear-gradient(160deg, rgba(17, 29, 47, 0.94), var(--surface));
@@ -481,6 +488,7 @@ input[type="number"] {
   font-size: 0.9rem;
 }
 
+/* Indicadores de mercado, medidores e controles de período. */
 .market-intro {
   margin-bottom: 28px;
 }
@@ -613,6 +621,7 @@ input[type="number"] {
 }
 
 .market-chart-card {
+  /* O gráfico ocupa uma linha inteira abaixo dos cartões de indicadores. */
   margin-top: 18px;
 }
 
@@ -662,6 +671,7 @@ input[type="number"] {
   overflow: hidden;
 }
 
+/* Elementos SVG e tooltip interativo do histórico de preços. */
 .bitcoin-chart {
   display: block;
   width: 100%;
@@ -701,9 +711,11 @@ input[type="number"] {
 .chart-interaction-line {
   fill: none;
   stroke: transparent;
-  stroke-width: 24;
+  stroke-width: 40;
   pointer-events: stroke;
   cursor: crosshair;
+  /* Evita que o arrasto sobre o traço seja interpretado como rolagem da página. */
+  touch-action: none;
 }
 
 .chart-tooltip {
@@ -807,6 +819,7 @@ input[type="number"] {
   font-size: 0.86rem;
 }
 
+/* Rodapé compartilhado por todas as páginas. */
 .site-footer {
   border-top: 1px solid var(--line);
   background: rgba(5, 12, 21, 0.45);
@@ -844,7 +857,9 @@ input[type="number"] {
   text-decoration: underline;
 }
 
+/* Breakpoints adaptam navegação, cartões e rodapé a telas menores. */
 @media (max-width: 980px) {
+  /* Em telas menores, a navegação pode deslizar horizontalmente e o rodapé empilha. */
   .nav-wrap {
     min-height: auto;
   }
@@ -886,6 +901,7 @@ input[type="number"] {
 }
 
 @media (max-width: 760px) {
+  /* Ajustes principais para celular: colunas únicas e controles mais compactos. */
   .nav-wrap {
     min-height: auto;
     flex-direction: column;
@@ -943,6 +959,7 @@ input[type="number"] {
 }
 
 @media (max-width: 560px) {
+  /* Evita que grades de conteúdo e resultados fiquem apertados em telas estreitas. */
   .feature-grid,
   .info-grid {
     grid-template-columns: 1fr;

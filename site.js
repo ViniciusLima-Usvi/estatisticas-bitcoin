@@ -7,6 +7,7 @@ const paginas = [
   { arquivo: 'sobre.html', nome: 'Sobre' }
 ];
 
+// O cabeçalho é compartilhado entre as páginas; o endereço atual marca o link ativo.
 const paginaAtual = location.pathname.split('/').pop() || 'index.html';
 const navegacao = paginas.map((pagina) => {
   const ativa = pagina.arquivo === paginaAtual;
@@ -20,6 +21,7 @@ document.getElementById('site-header').innerHTML = `
   </div>
 `;
 
+// O destino do rodapé muda conforme a página para oferecer uma navegação útil.
 const linkRodape = paginaAtual === 'index.html'
   ? { href: 'sobre.html', texto: 'Saiba mais sobre o projeto' }
   : paginaAtual === 'sobre.html'

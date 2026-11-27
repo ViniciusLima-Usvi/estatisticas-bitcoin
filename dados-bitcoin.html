@@ -28,6 +28,7 @@
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <!-- site.js preenche a navegação e o rodapé compartilhados. -->
   <header class="site-header" id="site-header"></header>
 
   <main class="container" id="conteudo">
@@ -37,6 +38,7 @@
       <p>Cotação, sentimento do mercado e histórico recente em um só lugar. Os dados são informativos e podem ter alguns minutos de atraso.</p>
     </section>
 
+    <!-- Os cartões recebem seus valores das fontes externas consultadas no script abaixo. -->
     <section class="market-grid" aria-label="Indicadores do Bitcoin">
       <article class="card market-card">
         <span class="eyebrow">Cotação atual em dólar</span>
@@ -82,6 +84,7 @@
       </article>
     </section>
 
+    <!-- O gráfico e seus períodos são desenhados e atualizados pelo script desta página. -->
     <section class="card market-chart-card" aria-labelledby="titulo-grafico">
       <div class="market-chart-heading">
         <div>
@@ -114,6 +117,7 @@
   <footer class="site-footer" id="site-footer"></footer>
 
   <script>
+    // Formatos de exibição e estado reutilizado entre as consultas da página.
     const formatoReal = new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -128,6 +132,7 @@
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+    // Granularidade e janela de tempo usadas nas consultas do gráfico.
     const periodosGrafico = {
       '24h': { granularity: 3600, horas: 24, descricao: 'nas últimas 24 horas' },
       '7d': { granularity: 86400, dias: 7, descricao: 'nos últimos 7 dias' },
@@ -169,6 +174,7 @@
         : `Não foi possível consultar ${recurso} (HTTP ${resposta.status}).`;
     }
 
+    // A taxa de câmbio é reutilizada por até seis horas para evitar consultas desnecessárias.
     async function atualizarConversaoReal(precoUsd) {
       const reais = document.getElementById('precoReais');
 
@@ -197,6 +203,7 @@
       reais.textContent = `Conversão aproximada em reais: ${formatoReal.format(precoUsd * taxaDolarParaReal)}`;
     }
 
+    // Busca a cotação atual, calcula a variação diária e atualiza a conversão em reais.
     async function carregarPreco() {
       const preco = document.getElementById('precoBitcoin');
       const variacao = document.getElementById('variacaoBitcoin');
@@ -257,6 +264,7 @@
       }
     }
 
+    // O índice de sentimento varia de 0 a 100 e inclui uma classificação textual da fonte.
     async function carregarSentimento() {
       const valor = document.getElementById('valorSentimento');
       const classificacao = document.getElementById('classificacaoSentimento');
@@ -290,6 +298,7 @@
       }
     }
 
+    // Mayer Multiple compara a cotação atual com a média dos últimos 200 fechamentos diários.
     function atualizarMayerMultiple(precoAtual) {
       if (!Number.isFinite(mediaMovel200Dias) || !Number.isFinite(precoAtual)) {
         return;
@@ -348,6 +357,7 @@
           throw new Error('O histórico recebido para o Mayer Multiple está incompleto.');
         }
 
+        // Candles da Coinbase trazem horário na posição 0 e fechamento na 4; ordena e usa os 200 mais recentes.
         const fechamentos = dados
           .map((ponto) => [ponto[0], ponto[4]])
           .sort((a, b) => a[0] - b[0])
@@ -377,6 +387,7 @@
       }
     }
 
+    // Consulta a métrica diária MVRV; a data exibida acompanha a atualização da fonte.
     async function carregarMvrv() {
       const valor = document.getElementById('valorMvrv');
       const atualizado = document.getElementById('atualizadoMvrv');
@@ -416,6 +427,7 @@
       }
     }
 
+    // Converte os pontos [timestamp, preço] em coordenadas SVG e configura a interação.
     function desenharGrafico(pontos) {
       const grafico = document.getElementById('graficoBitcoin');
       const estado = document.getElementById('estadoGrafico');
@@ -491,7 +503,8 @@
       const dataTooltip = grafico.querySelector('.chart-tooltip-date');
       let temporizadorTooltip;
 
-      linhaInterativa.addEventListener('pointermove', (event) => {
+      // Localiza o ponto mais próximo do dedo ou ponteiro e atualiza o preço exibido.
+      const atualizarTooltip = (event) => {
         clearTimeout(temporizadorTooltip);
         const matriz = grafico.getScreenCTM();
         if (!matriz) {
@@ -528,6 +541,23 @@
         precoTooltip.textContent = formatoDolar.format(valores[indice]);
         dataTooltip.textContent = formatarData(pontos[indice][0]);
         tooltip.setAttribute('visibility', 'visible');
+      };
+
+      linhaInterativa.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'touch') {
+          // Mantém o acompanhamento do dedo mesmo quando ele sai do traço da linha.
+          linhaInterativa.setPointerCapture(event.pointerId);
+        }
+        atualizarTooltip(event);
+      });
+      linhaInterativa.addEventListener('pointermove', atualizarTooltip);
+      linhaInterativa.addEventListener('pointerup', (event) => {
+        if (event.pointerType === 'touch') {
+          clearTimeout(temporizadorTooltip);
+          temporizadorTooltip = setTimeout(() => {
+            tooltip.setAttribute('visibility', 'hidden');
+          }, 4000);
+        }
       });
 
       linhaInterativa.addEventListener('pointerleave', (event) => {
@@ -551,6 +581,7 @@
       grafico.setAttribute('aria-label', `Preço do Bitcoin em dólares ${periodosGrafico[periodoGraficoSelecionado].descricao}: de ${formatoDolar.format(valores[0])} a ${formatoDolar.format(valores[valores.length - 1])}`);
     }
 
+    // Consulta o período selecionado e mantém apenas a resposta da seleção mais recente.
     async function carregarGrafico() {
       const idRequisicao = ++requisicaoGrafico;
       const periodo = periodoGraficoSelecionado;
@@ -585,6 +616,7 @@
         }
 
         const dados = await resposta.json();
+        // Descarta respostas antigas quando o usuário troca de período durante a consulta.
         if (idRequisicao !== requisicaoGrafico) {
           return;
         }
@@ -636,6 +668,7 @@
       carregarGrafico();
     }
 
+    // Atualiza os indicadores em paralelo para que cada fonte carregue independentemente.
     async function atualizarDados() {
       const botao = document.getElementById('atualizarDados');
       botao.disabled = true;
@@ -651,6 +684,7 @@
       botao.textContent = 'Atualizar tudo agora';
     }
 
+    // Liga os controles da página e agenda atualizações com intervalos adequados a cada fonte.
     document.getElementById('atualizarDados').addEventListener('click', atualizarDados);
     document.getElementById('periodo24h').addEventListener('click', selecionarPeriodoGrafico);
     document.getElementById('periodo7d').addEventListener('click', selecionarPeriodoGrafico);

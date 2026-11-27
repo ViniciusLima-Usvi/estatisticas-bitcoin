@@ -28,6 +28,7 @@
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <!-- site.js preenche a navegação e o rodapé compartilhados. -->
   <header class="site-header" id="site-header"></header>
 
   <main class="container container-narrow" id="conteudo">
@@ -51,6 +52,7 @@
   <footer class="site-footer" id="site-footer"></footer>
 
   <script>
+    // Calcula os marcos fixos de 500 dias antes e depois da data informada.
     function calcular() {
       const input = document.getElementById('dataHalving').value;
       const saida = document.getElementById('saida');
@@ -61,6 +63,7 @@
         return;
       }
 
+      // Usar o meio-dia evita que fusos e mudanças de horário alterem o dia do campo date.
       const halving = new Date(input + 'T12:00:00');
       if (Number.isNaN(halving.getTime())) {
         saida.textContent = 'A data informada não é válida. Escolha outra data.';
@@ -76,6 +79,7 @@
 
       const agora = new Date();
       const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 12);
+      // Compara datas normalizadas ao meio-dia para contar dias de calendário.
       const diffCompra = Math.ceil((compra - hoje) / (1000 * 60 * 60 * 24));
       const contagem = diffCompra > 0
         ? `Faltam ${diffCompra} dias para a data de compra calculada.`

@@ -28,6 +28,7 @@
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <!-- site.js preenche a navegação e o rodapé compartilhados. -->
   <header class="site-header" id="site-header"></header>
 
   <main class="container container-narrow" id="conteudo">
@@ -57,6 +58,7 @@
   <footer class="site-footer" id="site-footer"></footer>
 
   <script>
+    // Calcula datas em torno da referência usando as quantidades escolhidas pelo usuário.
     function calcular() {
       const dataInput = document.getElementById('dataReferencia').value;
       const diasAntesInput = document.getElementById('diasAntes').value;
@@ -69,6 +71,7 @@
         return;
       }
 
+      // O campo date fornece AAAA-MM-DD; os componentes são criados no fuso local.
       const [ano, mes, dia] = dataInput.split('-').map(Number);
       const referencia = new Date(ano, mes - 1, dia, 12);
       if (
@@ -82,6 +85,7 @@
         return;
       }
 
+      // Exige dias inteiros e não negativos antes de alterar as datas.
       const diasAntes = Number(diasAntesInput);
       const diasDepois = Number(diasDepoisInput);
       if (
