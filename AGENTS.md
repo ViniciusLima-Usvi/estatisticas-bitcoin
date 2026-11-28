@@ -1,4 +1,4 @@
-# Project instructions
+## Project instructions
 
 ## Project overview
 - This project is a small static website made of `index.html`, `calculadora.html`, `sobre.html`, and the shared `styles.css`.
